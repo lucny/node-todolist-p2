@@ -4,6 +4,7 @@ const express = require("express");
 const bodyParser = require("body-parser"); 
 /* Připojení externího modulu moment (https://momentjs.com/) - knihovna pro formátování datových a časových údajů */ 
 const moment = require("moment"); 
+const csvtojson = require("csvtojson");
 /* Připojení vestavěných modulů fs (práce se soubory) a path (cesty v adresářové struktuře) */ 
 const fs = require("fs"); 
 const path = require("path");
@@ -38,13 +39,19 @@ app.post('/savedata', urlencodedParser, function(req, res) {
 })
 
 app.get('/todolist', function(req, res) {
-  fs.readFile(path.join(__dirname, 'data/ukoly.csv'), function(err, data) {
-    res.send(data);
+  csvtojson({headers: ['ukol', 'predmet', 'zadani', 'odevzdani']})
+  .fromFile(path.join(__dirname, 'data/ukoly.csv'))
+  .then( data => {
+    console.log(data);
+    res.render('index', {nadpis: 'Seznam úkolů', ukoly: data});
+  })
+  .catch( error => {
+    console.log(error);
   });
 });
 
-app.get('/pokus', function(req, res) {
-  res.render('index', {nadpis: 'Seznam úkolů'});
+app.get('/about', function(req, res) {
+  res.render('about', {nadpis: 'O aplikaci'});
 })
 
 /* Spuštění webového serveru */ 
